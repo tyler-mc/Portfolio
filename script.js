@@ -330,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDotNavigation();
   initModalNavigation();
   initMobileSwipe();
+  initLogoCycling();
 });
 
 /**
@@ -1655,11 +1656,490 @@ function initMobileSwipe() {
       const diffY = Math.abs(e.changedTouches[0].screenY - cardTouchStartY);
 
       // If it's a tap (minimal movement), open the card
-      if (diffX < 10 && diffY < 10) {
+      if (diffX < 30 && diffY < 30) {
         activeCard.click();
       }
 
       activeCard = null;
     }, { passive: true });
   }
+}
+
+/**
+ * Logo Cycling - Click to glitch and cycle through wavy line images
+ * Easter Egg System - Progressive rewards for persistent clickers
+ */
+function initLogoCycling() {
+  const navLogo = document.getElementById('navLogo');
+  const logoImage = document.getElementById('logoImage');
+  const logoMessage = document.getElementById('logoMessage');
+
+  if (!navLogo || !logoImage) return;
+
+  // Generate array of all 100 wavy line images
+  const wavyLines = [];
+  for (let i = 1; i <= 100; i++) {
+    wavyLines.push(`images/WavyLineCircles/Wavy Line ${i}.png`);
+  }
+
+  // Start with index 6 (Wavy Line 7.png, zero-indexed)
+  let currentIndex = 6;
+  let clickCount = 0;
+  let messageTimeout = null;
+  let achievementContainer = null;
+  let achievementFill = null;
+
+  // Progressive messages aligned with portfolio philosophy
+  const messages = {
+    3: "...Oh? What you clicking this for?",
+    //10: "...",
+    15: "Curious one aren't you?",
+    //25: " ",
+    35: "Every click plants a seed... ",
+    45: "wow, you've clicked 45 times...",
+    //55: " ",
+    65: "...what lies beyond the final seed?",
+    //75: " ",
+    //85: " ",
+    95: "The final seed awaits..."
+  };
+
+  navLogo.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    // Don't allow clicks after completion
+    if (navLogo.classList.contains('completed')) return;
+
+    clickCount++;
+
+    // Add glitch class
+    navLogo.classList.add('glitching');
+
+    // Change image after glitch animation starts (200ms into the animation)
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % wavyLines.length;
+      logoImage.src = wavyLines[currentIndex];
+    }, 200);
+
+    // Remove glitch class after animation completes
+    setTimeout(() => {
+      navLogo.classList.remove('glitching');
+    }, 400);
+
+    // Handle Easter egg progression
+    handleEasterEgg(clickCount);
+  });
+
+  function handleEasterEgg(count) {
+    // Show messages at milestones
+    if (messages[count]) {
+      showMessage(messages[count]);
+    }
+
+    // Create progress bar at 50 clicks
+    if (count === 50) {
+      createAchievementBar();
+    }
+
+    // Update progress bar from 50-100
+    if (count >= 50 && count < 100) {
+      updateProgressBar(count);
+    }
+
+    // Transform to button at 100 clicks
+    if (count === 100) {
+      transformToButton();
+    }
+  }
+
+  function showMessage(text) {
+    if (!logoMessage) return;
+
+    // Clear existing timeout
+    if (messageTimeout) {
+      clearTimeout(messageTimeout);
+    }
+
+    const chars = '!@#$%^&*()_+-=[]{}|;:<>?/\\~`0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const duration = 600;
+    const frameRate = 50;
+    const frames = duration / frameRate;
+    let currentFrame = 0;
+
+    // Start with scrambled text
+    logoMessage.textContent = scrambleText(text, chars, 1);
+    logoMessage.classList.add('visible', 'glitching');
+
+    // Scramble animation
+    const interval = setInterval(() => {
+      currentFrame++;
+      const progress = currentFrame / frames;
+
+      // Gradually reveal characters from left to right
+      const revealIndex = Math.floor(progress * text.length);
+      let newText = '';
+
+      for (let i = 0; i < text.length; i++) {
+        if (i < revealIndex) {
+          newText += text[i];
+        } else if (text[i] === ' ') {
+          newText += ' ';
+        } else {
+          newText += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+
+      logoMessage.textContent = newText;
+
+      if (currentFrame >= frames) {
+        clearInterval(interval);
+        logoMessage.textContent = text;
+
+        // Remove glitching after scramble completes
+        setTimeout(() => {
+          logoMessage.classList.remove('glitching');
+        }, 100);
+      }
+    }, frameRate);
+
+    // Fade out after 3 seconds
+    messageTimeout = setTimeout(() => {
+      logoMessage.classList.remove('visible');
+    }, 3000);
+  }
+
+  function scrambleText(text, chars, scrambleRatio) {
+    return text.split('').map(char => {
+      if (char === ' ') return ' ';
+      return Math.random() < scrambleRatio
+        ? chars[Math.floor(Math.random() * chars.length)]
+        : char;
+    }).join('');
+  }
+
+  function createAchievementBar() {
+    // Create container
+    achievementContainer = document.createElement('div');
+    achievementContainer.className = 'achievement-container';
+    achievementContainer.innerHTML = `
+      <div class="achievement-label">Achievement Unlocked!</div>
+      <div class="achievement-bar" id="achievementBar">
+        <div class="achievement-fill" id="achievementFill"></div>
+      </div>
+    `;
+
+    document.body.appendChild(achievementContainer);
+
+    // Get fill element reference
+    achievementFill = document.getElementById('achievementFill');
+
+    // Show with fade-in
+    setTimeout(() => {
+      achievementContainer.classList.add('visible');
+    }, 100);
+
+    // Fade out label after 3 seconds
+    setTimeout(() => {
+      const label = achievementContainer.querySelector('.achievement-label');
+      if (label) {
+        label.classList.add('fade-out');
+      }
+    }, 3000);
+
+    // Initial fill at 50%
+    achievementFill.style.width = '0%';
+  }
+
+  function updateProgressBar(count) {
+    if (!achievementFill) return;
+
+    // Calculate percentage from 50 to 100 clicks
+    const percentage = ((count - 50) / 50) * 100;
+    achievementFill.style.width = `${percentage}%`;
+  }
+
+  function transformToButton() {
+    if (!achievementContainer) return;
+
+    const achievementBar = document.getElementById('achievementBar');
+    if (!achievementBar) return;
+
+    // Hide message if showing
+    if (logoMessage) {
+      logoMessage.classList.remove('visible');
+    }
+
+    // Get bar position for explosion origin
+    const rect = achievementBar.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // Trigger particle explosion
+    createParticleExplosion(centerX, centerY);
+
+    // Transform bar after explosion starts
+    setTimeout(() => {
+      // Make bar clickable (label stays red and visible above logo)
+      achievementBar.classList.add('complete');
+      achievementBar.style.cursor = 'pointer';
+    }, 400);
+
+    // Add click handler
+    achievementBar.addEventListener('click', () => {
+      openCelebrationModal();
+    });
+  }
+
+  function createParticleExplosion(x, y) {
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = x + 'px';
+    container.style.top = y + 'px';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '200';
+    document.body.appendChild(container);
+
+    // Create 30 particles bursting outward
+    for (let i = 0; i < 30; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'explosion-particle';
+
+      // Calculate random angle and velocity
+      const angle = (Math.PI * 2 * i) / 30 + (Math.random() - 0.5) * 0.3;
+      const velocity = 80 + Math.random() * 40;
+      const tx = Math.cos(angle) * velocity;
+      const ty = Math.sin(angle) * velocity;
+
+      particle.style.setProperty('--tx', tx + 'px');
+      particle.style.setProperty('--ty', ty + 'px');
+
+      container.appendChild(particle);
+    }
+
+    // Remove after animation completes
+    setTimeout(() => {
+      container.remove();
+    }, 1000);
+  }
+}
+
+
+/**
+ * Celebration Modal - Full-screen particle celebration with typewriter message
+ */
+function openCelebrationModal() {
+  const modal = document.getElementById('celebrationModal');
+  const canvas = document.getElementById('celebrationParticles');
+  const textContainer = document.getElementById('celebrationText');
+  const closeBtn = document.getElementById('celebrationClose');
+
+  if (!modal || !canvas || !textContainer) return;
+
+  // Show modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Initialize particle animation
+  initCelebrationParticles(canvas);
+
+  // Prepare typewriter text
+  const celebrationMessage = [
+    "....",
+    "Wow.",
+    "",
+    "I didn't expect to see you here.",
+    "",
+    "Design and Interactions can be so simple",
+    "yet they can still captivate us,",
+    "drawn in by our curiosity we want to see what could possibly be next.",
+    "This desire connects us, makes us human.",
+    "We create to connect to others, to send a part of us out into the world.",
+    "",
+    "Thank you for engaging and spending a moment with me."
+  ];
+
+  // Create paragraph elements
+  textContainer.innerHTML = '';
+  celebrationMessage.forEach(line => {
+    const p = document.createElement('p');
+    p.textContent = line;
+    p.dataset.originalText = line;
+    textContainer.appendChild(p);
+  });
+
+  // Start typewriter effect
+  setTimeout(() => {
+    typewriteCelebration(textContainer.querySelectorAll('p'), 0);
+  }, 1000);
+
+  // Close button handler (only way to close)
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeCelebrationModal);
+  }
+}
+
+
+function closeCelebrationModal() {
+  const modal = document.getElementById('celebrationModal');
+  const navLogo = document.getElementById('navLogo');
+
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+
+  // Transform logo to asterisk
+  if (navLogo) {
+    navLogo.classList.add('completed');
+  }
+
+  // Remove achievement bar
+  const achievementContainer = document.querySelector('.achievement-container');
+  if (achievementContainer) {
+    achievementContainer.style.opacity = '0';
+    setTimeout(() => {
+      achievementContainer.remove();
+    }, 500);
+  }
+}
+
+/**
+ * Typewriter effect for celebration text
+ */
+function typewriteCelebration(paragraphs, index) {
+  if (index >= paragraphs.length) return;
+
+  const p = paragraphs[index];
+  const text = p.dataset.originalText;
+
+  // Skip empty paragraphs
+  if (!text.trim()) {
+    p.classList.add('complete');
+    p.style.opacity = '1';
+    setTimeout(() => {
+      typewriteCelebration(paragraphs, index + 1);
+    }, 200);
+    return;
+  }
+
+  p.classList.add('typing');
+  p.style.opacity = '1';
+  p.textContent = '';
+
+  let charIndex = 0;
+  const speed = 30; // ms per character
+
+  function typeChar() {
+    if (charIndex < text.length) {
+      p.textContent += text[charIndex];
+      charIndex++;
+      setTimeout(typeChar, speed);
+    } else {
+      // Paragraph complete
+      p.classList.remove('typing');
+      p.classList.add('complete');
+
+      // Start next paragraph after pause
+      setTimeout(() => {
+        typewriteCelebration(paragraphs, index + 1);
+      }, 400);
+    }
+  }
+
+  typeChar();
+}
+
+/**
+ * Celebration Particles - Dense star field animation
+ */
+function initCelebrationParticles(canvas) {
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animationId;
+
+  // Resize canvas
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initParticles();
+  }
+
+  // Initialize particles
+  function initParticles() {
+    particles = [];
+    const colors = ['#FFFFFF', '#FFD700', '#00CED1', '#FF3333'];
+
+    for (let i = 0; i < 150; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 3 + 1,
+        speedX: (Math.random() - 0.5) * 0.3,
+        speedY: (Math.random() - 0.5) * 0.3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random() * 0.5 + 0.5
+      });
+    }
+  }
+
+  // Animate particles
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      // Update position
+      p.x += p.speedX;
+      p.y += p.speedY;
+
+      // Wrap around edges
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      // Draw particle
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    // Draw connections
+    particles.forEach((p1, i) => {
+      particles.slice(i + 1, i + 10).forEach(p2 => {
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 * (1 - dist / 120)})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      });
+    });
+
+    animationId = requestAnimationFrame(animate);
+  }
+
+  // Initialize and start
+  resizeCanvas();
+  animate();
+
+  // Resize handler
+  window.addEventListener('resize', resizeCanvas);
+
+  // Cleanup on modal close
+  const modal = document.getElementById('celebrationModal');
+  const observer = new MutationObserver(() => {
+    if (!modal.classList.contains('active') && animationId) {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resizeCanvas);
+      observer.disconnect();
+    }
+  });
+  observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
 }

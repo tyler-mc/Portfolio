@@ -28,7 +28,9 @@
   <!-- Navigation -->
   <nav class="nav" id="nav">
     <div class="container nav__inner">
-      <a href="#" class="nav__logo">TM</a>
+      <a href="#" class="nav__logo" id="navLogo">
+        <img src="images/WavyLineCircles/Wavy Line 7.png" alt="Logo" id="logoImage">
+      </a>
       <ul class="nav__links" id="navLinks">
         <li><a href="#about" class="nav__link">About</a></li>
         <li><a href="#skills" class="nav__link">Skills</a></li>
@@ -43,6 +45,9 @@
       </button>
     </div>
   </nav>
+
+  <!-- Logo Click Easter Egg - Message Display -->
+  <div id="logoMessage" class="logo-message"></div>
 
   <!-- Hero Section -->
   <section class="hero" id="hero">
@@ -325,7 +330,7 @@
     <div class="decorative-circles">○○○</div>
   </section>
 
-  <!-- Featured Work Section -->
+  <!-- Portfolio -->
   <section id="work">
     <!-- Vector wave decorations -->
     <div class="wave-decoration wave-decoration--work-top wave-decoration--dark">
@@ -341,7 +346,7 @@
       <div class="section-header">
         <span class="section-code">[03.WORK]</span>
         <span class="section-label">Portfolio</span>
-        <h2 class="section-title" data-glitch="true">Featured Work</h2>
+        <h2 class="section-title" data-glitch="true">Portfolio</h2>
         <p class="section-subtitle">
           Highlighted projects showcasing creative direction, technical implementation, and design leadership.
         </p>
@@ -752,6 +757,15 @@
       <p class="footer__text">© 2026 Tyler McCulloch. Designed with passion for great experiences.</p>
     </div>
   </footer>
+
+  <!-- Celebration Modal - 100 Click Easter Egg -->
+  <div class="celebration-modal" id="celebrationModal">
+    <canvas class="celebration-particles" id="celebrationParticles"></canvas>
+    <button class="mystery-modal__close" id="celebrationClose" aria-label="Close">&times;</button>
+    <div class="celebration-content">
+      <div class="celebration-text" id="celebrationText"></div>
+    </div>
+  </div>
 
   <!-- JavaScript -->
   <script src="script.js"></script>
