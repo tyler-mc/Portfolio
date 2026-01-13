@@ -1,0 +1,11 @@
+# Exclude personal documents and scripts
+parse_content.py
+portfolio_export.md
+Tyler McCulloch – Design Director Resume.docx.pdf
+Tyler McCulloch – ProductDesign Manager Resume-1.pdf
+TylerMcCulloch_EATechnicalDesignerCV.pdf
+TylerMcCulloch_FortisCoverLetter.pdf
+TylerMcCulloch_GardensCoverLetter.pdf
+TylerMcCulloch_RippleEffectCoverLetter.pdf
+TylerMcCulloch_SGICoverLetter.pdf
+.DS_Store
