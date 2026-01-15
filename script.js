@@ -306,6 +306,31 @@ const projectData = {
   }
 };
 
+// Analytics Tracker - Virtual Pageview System as I'm only tracking pageclicks
+const AnalyticsTracker = {
+  resetDelay: 150,
+
+  track(category, action, label = '') {
+    const trackingPath = label
+      ? `#/${category}/${action}/${this.sanitize(label)}`
+      : `#/${category}/${action}`;
+
+    window.history.pushState(null, '', trackingPath);
+
+    if (window.location.hostname === 'localhost') {
+      console.log('📊', category, '>', action, label);
+    }
+
+    setTimeout(() => {
+      window.history.replaceState(null, '', window.location.pathname);
+    }, this.resetDelay);
+  },
+
+  sanitize(str) {
+    return str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  }
+};
+
 
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize all features
@@ -317,6 +342,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSectionReveal();
   initAboutHoverEffect();
   initMysteryCard();
+
+  // Analytics tracking
+  initContactTracking();
+  initCTATracking();
 
   // Phase 2: Hero enhancements
   initParticleField();
@@ -712,6 +741,8 @@ function initProjectModals() {
   document.querySelectorAll('.project-card[data-project]').forEach(card => {
     card.addEventListener('click', () => {
       const projectId = card.dataset.project;
+      const projectName = projectData[projectId]?.title || projectId;
+      AnalyticsTracker.track('project', 'click', projectName);
       openProjectModal(projectId);
     });
   });
@@ -759,6 +790,9 @@ function initProjectModals() {
       console.warn('Project not found:', projectId);
       return;
     }
+
+    // Track case study opens
+    AnalyticsTracker.track('case-study', 'open', project.title);
 
     // Handle mystery project specially
     if (project.isMystery) {
@@ -842,6 +876,37 @@ function initProjectModals() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
   }
+}
+
+/**
+ * Contact Link Tracking - Email and LinkedIn
+ */
+function initContactTracking() {
+  // Track email clicks
+  document.querySelectorAll('a[href^="mailto:"]').forEach(link => {
+    link.addEventListener('click', () => {
+      AnalyticsTracker.track('contact', 'email');
+    });
+  });
+
+  // Track LinkedIn clicks
+  document.querySelectorAll('a[href*="linkedin.com"]').forEach(link => {
+    link.addEventListener('click', () => {
+      AnalyticsTracker.track('contact', 'linkedin');
+    });
+  });
+}
+
+/**
+ * CTA Button Tracking - Hero section CTAs
+ */
+function initCTATracking() {
+  document.querySelectorAll('.hero__cta .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const type = btn.textContent.includes('View Work') ? 'view-work' : 'contact';
+      AnalyticsTracker.track('cta', 'hero-click', type);
+    });
+  });
 }
 
 /**
@@ -1121,6 +1186,9 @@ window.mysteryTimeouts = [];
 function openMysteryModal() {
   const mysteryModal = document.getElementById('mysteryModal');
   const paragraphs = mysteryModal.querySelectorAll('.mystery-modal__text p');
+
+  // Track mystery project opens
+  AnalyticsTracker.track('mystery', 'open');
 
   mysteryModal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -1574,6 +1642,11 @@ function initSkillBlocks() {
         // Toggle current block
         const isExpanded = block.classList.toggle('expanded');
         expandBtn.textContent = isExpanded ? '[− Hide Projects]' : '[+ See Projects]';
+
+        // Track skill block expansions
+        if (isExpanded) {
+          AnalyticsTracker.track('skill', 'expand', block.dataset.skill);
+        }
       });
     }
 
@@ -1852,6 +1925,11 @@ function initLogoCycling() {
     if (navLogo.classList.contains('completed')) return;
 
     clickCount++;
+
+    // Track milestone clicks
+    if ([10, 25, 50, 75, 100].includes(clickCount)) {
+      AnalyticsTracker.track('easter-egg', 'milestone', `clicks-${clickCount}`);
+    }
 
     // Add glitch class
     navLogo.classList.add('glitching');

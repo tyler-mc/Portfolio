@@ -2410,6 +2410,11 @@ section {
   animation: fadeInDelayed 0.5s ease 6s forwards;
 }
 
+.celebration-modal.active .mystery-modal__close {
+  animation: fadeInDelayed 0.5s ease 1s forwards;
+  z-index: 401;
+}
+
 .mystery-modal__close:hover {
   background: var(--accent-red);
   border-color: var(--accent-red);
